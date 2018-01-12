@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:amqp="http://www.mulesoft.org/schema/mule/amqp" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/amqp http://www.mulesoft.org/schema/mule/amqp/current/mule-amqp.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+    <amqp:connector name="AMQP_0_9_Connector" validateConnections="true" doc:name="AMQP-0-9 Connector" ackMode="MANUAL"/>
+    <flow name="advancedmessagingFlow">
+        <http:listener config-ref="api-1-httpListenerConfig" path="/sendRabbitMq" allowedMethods="POST" doc:name="HTTP"/>
+        <amqp:outbound-endpoint exchangeName="amq.topic" queueName="MessageIn" exchangeDurable="true" responseTimeout="10000" connector-ref="AMQP_0_9_Connector" doc:name="AMQP-0-9"/>
+        <logger message="Log the AMQP processing request  : #[]" level="INFO" doc:name="Logger"/>
+        <set-payload value="Posted the message to AMQP " doc:name="Set Payload"/>
+    </flow>
+    <flow name="advancedmessagingFlow1">
+        <amqp:inbound-endpoint exchangeName="amq.topic" queueName="MessageIn" exchangeDurable="true" responseTimeout="10000" connector-ref="AMQP_0_9_Connector" doc:name="AMQP-0-9"/>
+        <logger message="Logging the read Messages from AMQP : #[payload]" level="INFO" doc:name="Logger"/>
+        <file:outbound-endpoint path="C:\Users\hakaimal\AnypointStudio\workspace\flightapi\src\main\resources\output" outputPattern="*.arc" responseTimeout="10000" doc:name="File"/>
+        <amqp:acknowledge-message multiple="true" doc:name="AMQP-0-9 Acknowledge Message"/>
+    </flow>
+</mule>
